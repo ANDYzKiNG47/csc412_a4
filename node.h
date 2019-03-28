@@ -6,6 +6,7 @@ class Node{
     Node();
     Node( int x_coord, int y_coord );
     Node( int x_coord, int y_coord, int* neigh_idx );
+    ~Node();
     int get_x();
     void set_x( int x );
     int get_y();

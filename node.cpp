@@ -27,6 +27,10 @@ Node::Node( int x_coord, int y_coord, int* neigh_idx ){
   this->y_coord = y_coord;
   this -> neigh_idx = neigh_idx;
 }
+//destructor
+Node::~Node(){
+  delete [] this->neigh_idx;
+}
 // setters and getters
 int Node::get_x(){
   return this->x_coord;
