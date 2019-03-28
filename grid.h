@@ -12,6 +12,7 @@ class Grid{
     ~Grid();
     void read_grid( string grid_path );
     void read_nodes( string node_list_path );
+    void find_neigh();
     void set_start_end( int start_idx, int end_idx );
     void print_grid();
     void print_nodes();

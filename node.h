@@ -14,6 +14,7 @@ class Node{
     void set_neigh( int* neigh_idx );
     int get_start_or_end();
     void set_start_or_end( int flag );
+    void print_neigh();
 
 
   private:

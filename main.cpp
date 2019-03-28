@@ -13,13 +13,15 @@
   * argv[3] == index of first node
   * argv[4] == index of second node
   * argv[5] == path to output directory
+  * TODO FIX find_neigh METHOD
 */
 using namespace std;
 int main( int argc, char** argv ){
-
   // read in command line arguments
   string grid_path = argv[1];
+  //string grid_path = "/home/az47/CSC412/a4/grids/rand_grid.txt";
   string node_list_path = argv[2];
+  //string node_list_path = "/home/az47/CSC412/a4/nodes/rand_nodes.txt";
   int start_node_idx = atoi( argv[3] );
   int end_node_idx = atoi( argv[4] );
   string out_dir = argv[5];

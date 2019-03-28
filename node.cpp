@@ -1,4 +1,7 @@
 #include <cstdlib>
+#include <iostream>
+#include <string>
+#include <cstring>
 
 #include "node.h"
 
@@ -8,14 +11,14 @@ using namespace std;
 Node::Node(){
   this->x_coord = -1;
   this->y_coord = -1;
-  this -> neigh_idx = NULL;
-  this -> start_or_end = 0;
+  this->neigh_idx = new int[3];
+  this->start_or_end = 0;
 }
 // constructor, no neigh_idx
 Node::Node( int x_coord, int y_coord ){
   this->x_coord = x_coord;
   this->y_coord = y_coord;
-  this -> neigh_idx = NULL;
+  this->neigh_idx = new int[3];
   this -> start_or_end = 0;
 }
 // full constructor
@@ -41,11 +44,17 @@ int* Node::get_neigh(){
   return this->neigh_idx;
 }
 void Node::set_neigh( int* neigh_idx ){
-  this -> neigh_idx = neigh_idx;
+  memcpy( this->neigh_idx, neigh_idx, sizeof(int)*3 );
 }
 int Node::get_start_or_end(){
   return this->start_or_end;
 }
 void Node::set_start_or_end( int flag ){
   this->start_or_end = flag;
+}
+void Node::print_neigh(){
+  for( int i = 0; i < 3; i++ ){
+    cout << this->neigh_idx[i] << " ";
+  }
+  cout << endl;
 }

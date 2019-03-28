@@ -8,10 +8,13 @@
 
 using namespace std;
 
+int manhattan_dist( Node* start_node, Node* end_node );
+int find_max_idx( int* array );
+
 // default constructor
 Grid::Grid(){
-  this -> grid = NULL;
-  this -> num_rows = 0;
+  this->grid = NULL;
+  this->num_rows = 0;
   this->num_cols = 0;
 }
 // full constructor
@@ -72,6 +75,38 @@ void Grid::read_nodes( string node_list_path ){
     this -> nodes[i]->set_x( x );
     this -> nodes[i]->set_y( y );
   }
+  this->find_neigh();
+}
+
+// method that finds each node's 3 nearest neighbors using Manhattan distance
+// and records the index of those neighbors in the neigh_idx private array
+void Grid::find_neigh(){
+  // loop through all nodes
+  for( int i = 0; i < this->num_nodes; i++ ){
+    // array to store Manhattan distances of all other nodes in respect to node at index i
+    int distances[this->num_nodes];
+    // loop to compute Manhattan distance of all other nodes
+    for( int j = 0; j < this->num_nodes; j++ ){
+      // if to ensure node does not compute Manhattan distance of itself
+      if( i != j ){
+        distances[j] = manhattan_dist( this->nodes[i], this->nodes[j] );
+      } else{
+        // set the distance of the node being tested equal to the maximum int value so it can never have the lowest score
+        distances[j] = INT8_MAX;
+      }
+    }
+    // find 3 lowest Manhattan distances in the array and store the index of the score in private nodes array
+    int min[3] = { distances[0], distances[1], distances[2] };
+    int max_min_idx = find_max_idx( min );
+    for( int j = 3; j < this->num_nodes; j++ ){
+      if( distances[j] < min[max_min_idx] ){
+        min[max_min_idx] = j;
+        max_min_idx = find_max_idx( min );
+      }
+    }
+    // copy indecies of closest nodes into neigh_idx array, in the node object
+    this->nodes[i]->set_neigh( min );
+  }
 }
 
 void Grid::set_start_end( int start_idx, int end_idx ){
@@ -103,13 +138,30 @@ void Grid::print_nodes(){
     cout << "Node[" << i << "]: ";
     cout << "( " << nodes[i]->get_x() << " , " << nodes[i]->get_y() << " )" << endl;
     cout << "start or end flag:  " << nodes[i]->get_start_or_end() <<endl;
+    cout << "neighbor indices:   ";
+    nodes[i]->print_neigh();
     cout << endl;
   }
-  cout<<endl<<endl;
 }
 
 // methods that prints all information
 void Grid::print(){
   this->print_grid();
   this->print_nodes();
+}
+
+int manhattan_dist( Node* start_node, Node* end_node ){
+  int x1 = start_node->get_x();
+  int y1 = start_node->get_y();
+  int x2 = end_node->get_x();
+  int y2 = end_node->get_y();
+  return abs( x1 - x2 ) + abs( y1 - y2 );
+}
+
+int find_max_idx( int* array ){
+  int max_idx = 0;
+  for( int i = 1; i < 3; i++ ){
+    if( array[i] > array[max_idx] ) max_idx = i;
+  }
+  return max_idx;
 }

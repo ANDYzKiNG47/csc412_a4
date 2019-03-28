@@ -13,5 +13,10 @@ touch nodes/rand_nodes.txt
 g++ -g -Wall gen_nodes.cpp -o gen_nodes
 ./gen_nodes $3 $1 $2 nodes/rand_nodes.txt
 # run shortest program with parameters generated
+# argv[1] == path to grid file
+# argv[2] == path to file that stores list of nodes
+# argv[3] == index of first node
+# argv[4] == index of second node
+# argv[5] == path to output directory
 ./shortest /home/az47/CSC412/a4/grids/rand_grid.txt /home/az47/CSC412/a4/nodes/rand_nodes.txt $4 $5 $6
 # endif
