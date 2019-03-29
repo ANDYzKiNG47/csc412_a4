@@ -23,6 +23,12 @@ class Grid{
     int num_cols;
     int num_nodes;
     Node** nodes;
+    int find_max_idx( float* array );
+    int manhattan_dist( Node* start_node, Node* end_node );
+    int** create_matrix();
+    void matrix_insert( int** matrix, int index, int* array );
+    void to_node( int** matrix );
+    void delete_matrix( int** matrix );
 };
 
 #endif

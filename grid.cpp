@@ -6,11 +6,13 @@
 #include "node.h"
 #include "grid.h"
 
+#define INT_MAX 2147483647
+
 using namespace std;
 
-int manhattan_dist( Node* start_node, Node* end_node );
-int find_max_idx( int* array );
-
+/*                *\
+  *   PUBLIC     *
+*\                */
 // default constructor
 Grid::Grid(){
   this->grid = NULL;
@@ -81,10 +83,11 @@ void Grid::read_nodes( string node_list_path ){
 // method that finds each node's 3 nearest neighbors using Manhattan distance
 // and records the index of those neighbors in the neigh_idx private array
 void Grid::find_neigh(){
+  int** neigh_matrix = create_matrix();
   // loop through all nodes
   for( int i = 0; i < this->num_nodes; i++ ){
     // array to store Manhattan distances of all other nodes in respect to node at index i
-    int distances[this->num_nodes];
+    float distances[this->num_nodes];
     // loop to compute Manhattan distance of all other nodes
     for( int j = 0; j < this->num_nodes; j++ ){
       // if to ensure node does not compute Manhattan distance of itself
@@ -92,21 +95,27 @@ void Grid::find_neigh(){
         distances[j] = manhattan_dist( this->nodes[i], this->nodes[j] );
       } else{
         // set the distance of the node being tested equal to the maximum int value so it can never have the lowest score
-        distances[j] = INT8_MAX;
+        distances[j] = INT_MAX;
       }
     }
     // find 3 lowest Manhattan distances in the array and store the index of the score in private nodes array
-    int min[3] = { distances[0], distances[1], distances[2] };
+    float min[3] = { distances[0], distances[1], distances[2] };
+    int min_idx[3] = { 0, 1, 2 };
     int max_min_idx = find_max_idx( min );
     for( int j = 3; j < this->num_nodes; j++ ){
       if( distances[j] < min[max_min_idx] ){
         min[max_min_idx] = j;
+        min_idx[max_min_idx] = j;
         max_min_idx = find_max_idx( min );
       }
     }
-    // copy indecies of closest nodes into neigh_idx array, in the node object
-    this->nodes[i]->set_neigh( min );
+    // insert node's neighbors into neigh_matrix
+    matrix_insert( neigh_matrix, i, min_idx );
+
   }
+  // generate neigh_idx vector based on neigh_matrix
+  to_node( neigh_matrix );
+  delete_matrix( neigh_matrix );
 }
 
 void Grid::set_start_end( int start_idx, int end_idx ){
@@ -150,7 +159,12 @@ void Grid::print(){
   this->print_nodes();
 }
 
-int manhattan_dist( Node* start_node, Node* end_node ){
+/*                *\
+  *   PRIVATE    *
+*\                */
+
+// function to compute Manhattan distance between 2 nodes
+int Grid::manhattan_dist( Node* start_node, Node* end_node ){
   int x1 = start_node->get_x();
   int y1 = start_node->get_y();
   int x2 = end_node->get_x();
@@ -158,10 +172,58 @@ int manhattan_dist( Node* start_node, Node* end_node ){
   return abs( x1 - x2 ) + abs( y1 - y2 );
 }
 
-int find_max_idx( int* array ){
+// helper function that finds the greatest element in an array
+// ARRAY LENGTH MUST ALWAYS == 3
+int Grid::find_max_idx( float* array ){
   int max_idx = 0;
   for( int i = 1; i < 3; i++ ){
     if( array[i] > array[max_idx] ) max_idx = i;
   }
   return max_idx;
+}
+
+// function that creates a 2D array used to keep track of the node's neighbors
+// 1 == neighbors
+// 0 == not neighbors
+int** Grid::create_matrix(){
+  int** matrix = new int*[num_nodes];
+  for( int i = 0; i < num_nodes; ++i ){
+    matrix[i] = new int[num_nodes];
+  }
+  // set all elements equal to 0
+  for( int i = 0; i < num_nodes; i++ ){
+    for( int j = 0; j < num_nodes; j++ ){
+      matrix[i][j] = 0;
+    }
+  }
+  return matrix;
+}
+// function that inserts a single node's neighbors into the matrix
+// ARRAY LENGTH MUST ALWAYS == 3
+void Grid::matrix_insert( int** matrix, int index, int* array ){
+  for( int i = 0; i < 3; i++ ){
+    int x = array[i];
+    matrix[index][x] = 1;
+    matrix[x][index] = 1;
+  }
+}
+// function called on a final matrix
+// interprets matrix and stores results in neigh_idx vector
+void Grid::to_node( int** matrix ){
+  for( int i = 0; i < num_nodes; i++ ){
+    vector<int> neigh_idx;
+    for( int j = 0; j < num_nodes; j++ ){
+      if( matrix[i][j] == 1 ){
+        neigh_idx.push_back( j );
+      }
+    }
+    nodes[i]->set_neigh( neigh_idx );
+  }
+}
+// function to delete matrix after use
+void Grid::delete_matrix( int** matrix ){
+  for( int i = 0; i < num_nodes; ++i ){
+    delete [] matrix[i];
+  }
+  delete [] matrix;
 }
