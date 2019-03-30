@@ -22,9 +22,9 @@ Grid::Grid(){
 // full constructor
 Grid::Grid( string grid_path, string node_list_path ){
   // init grid, num_cols, num_rows
-  this -> read_grid( grid_path );
+  read_grid( grid_path );
   // init nodes, num_nodes
-  this -> read_nodes( node_list_path );
+  read_nodes( node_list_path );
 }
 
 //destructor
@@ -124,26 +124,62 @@ void Grid::set_start_end( int start_idx, int end_idx ){
     if ( i == start_idx ) this->nodes[i]->set_start_or_end(1);
     if ( i == end_idx ) this->nodes[i]->set_start_or_end(2);
   }
+  this->start_idx = start_idx;
+  this->end_idx = end_idx;
 }
 
-// that that prints the 2D array
+// method that finds all paths from the start node to the end node
+// min depth == 3
+// max depth == 5
+void Grid::find_all_paths(){
+  // Mark all nodes as not visited
+  bool *visited = new bool[num_nodes];
+
+  // Create an array to store paths
+  int *path = new int[num_nodes];
+  int path_index = 0; // Initialize path[] as empty
+
+  // Initialize all nodes as not visited
+  for ( int i = 0; i < num_nodes; i++ )
+      visited[i] = false;
+
+  // Call the recursive helper function to print all paths
+  int s = start_idx;
+  int e = end_idx;
+  all_path(s, e, visited, path, path_index);
+  delete [] path;
+}
+// method that prints all paths from the start to end node
+void Grid::print_all_paths(){
+  int idx = 0;
+  for( auto i = all_paths.begin(); i != all_paths.end(); ++i ){
+    cout << "all_paths[" << idx << "]:  ";
+    for( auto j = i->begin(); j != i->end(); ++j ){
+      cout << *j << " ";
+    }
+    cout << endl;
+    idx++;
+  }
+  cout << endl;
+}
+// method that prints the 2D array & its demensions
 void Grid::print_grid(){
   cout<<endl;
-  for( int i = 0; i < this->num_rows; i++ ){
-    for( int j = 0; j < this->num_cols; j++ ){
-      cout << this->grid[i][j] << " ";
+  for( int i = 0; i < num_rows; i++ ){
+    for( int j = 0; j < num_cols; j++ ){
+      cout << grid[i][j] << " ";
     }
     cout << endl;
   }
   cout << endl;
-  cout << "num_rows: " << this->num_rows << endl;
-  cout << "num_cols: " << this->num_cols << endl;
+  cout << "num_rows: " << num_rows << endl;
+  cout << "num_cols: " << num_cols << endl;
 }
 
 // method that prints all nodes coordinates TODO: MAYBE PRINT MORE INFO
 void Grid::print_nodes(){
   cout<<endl;
-  for( int i = 0; i < this->num_nodes; i++ ){
+  for( int i = 0; i < num_nodes; i++ ){
     cout << "Node[" << i << "]: ";
     cout << "( " << nodes[i]->get_x() << " , " << nodes[i]->get_y() << " )" << endl;
     cout << "start or end flag:  " << nodes[i]->get_start_or_end() <<endl;
@@ -155,13 +191,46 @@ void Grid::print_nodes(){
 
 // methods that prints all information
 void Grid::print(){
-  this->print_grid();
-  this->print_nodes();
+  print_grid();
+  print_nodes();
+  print_all_paths();
 }
 
 /*                *\
   *   PRIVATE    *
 *\                */
+
+// recursive helper function to find_all_paths
+// visited[] keeps track of vertices in current path.
+// path[] stores actual vertices and path_index is current
+// index in path[]
+void Grid::all_path( int start, int end, bool visited[], int path[], int &path_index ){
+  // Mark the current node and store it in path[]
+  visited[start] = true;
+  path[path_index] = start;
+  path_index++;
+
+  // If current vertex is same as destination, then print
+  // current path[]
+  if ( start == end ){
+    vector<int> temp;
+    for ( int i = 0; i < path_index; i++ ){
+      temp.push_back( path[i] );
+    }
+    if ( temp.size() >= 3 && temp.size() <= 5 )
+      all_paths.push_back( temp );
+  }else{ // If current vertex is not destination
+      // Recur for all the vertices adjacent to current vertex
+    vector<int> neighs = nodes[start]->get_neigh();
+    for( auto i = neighs.begin(); i != neighs.end(); ++i )
+      if ( !visited[*i] )
+        all_path( *i, end, visited, path, path_index );
+  }
+
+  // Remove current vertex from path[] and mark it as unvisited
+  path_index--;
+  visited[start] = false;
+}
 
 // function to compute Manhattan distance between 2 nodes
 int Grid::manhattan_dist( Node* start_node, Node* end_node ){

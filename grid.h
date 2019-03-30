@@ -14,6 +14,8 @@ class Grid{
     void read_nodes( string node_list_path );
     void find_neigh();
     void set_start_end( int start_idx, int end_idx );
+    void find_all_paths();
+    void print_all_paths();
     void print_grid();
     void print_nodes();
     void print();
@@ -23,6 +25,10 @@ class Grid{
     int num_cols;
     int num_nodes;
     Node** nodes;
+    int start_idx;
+    int end_idx;
+    vector< vector<int> > all_paths;
+    void all_path( int start, int end, bool visited[], int path[], int &path_index );
     int find_max_idx( float* array );
     int manhattan_dist( Node* start_node, Node* end_node );
     int** create_matrix();

@@ -13,8 +13,9 @@
   * argv[3] == index of first node
   * argv[4] == index of second node
   * argv[5] == path to output directory
-  * TODO FIX find_neigh METHOD
 */
+// TODO: FIND ALL PATHS FROM START NODE TO END NODE
+
 using namespace std;
 int main( int argc, char** argv ){
   // read in command line arguments
@@ -32,6 +33,8 @@ int main( int argc, char** argv ){
   // create instance of Grid class
   Grid grid = Grid( grid_path, node_list_path );
   grid.set_start_end( start_node_idx, end_node_idx );
+  grid.find_all_paths();
+  
   grid.print();
 
   return 0;
