@@ -30,16 +30,16 @@ Grid::Grid( string grid_path, string node_list_path ){
 //destructor
 Grid::~Grid(){
   // delete grid
-  for ( int i = 0; i < this->num_rows; i++ ){
-    delete [] this -> grid[i];
+  for ( int i = 0; i < num_rows; i++ ){
+    delete [] grid[i];
   }
-  delete [] this -> grid;
+  delete [] grid;
 
   // delete nodes
-  for ( int i = 0; i < this->num_nodes; i++ ){
-    delete this -> nodes[i];
+  for ( int i = 0; i < num_nodes; i++ ){
+    delete nodes[i];
   }
-  delete [] this -> nodes;
+  delete [] nodes;
 }
 
 // method that generates a 2D array given a text file and returns a pointer to the array
@@ -60,7 +60,7 @@ void Grid::read_grid( string grid_path ){
   // read data from file into the grid
   for ( int i = 0; i< num_rows; i++ )
     for( int j = 0; j < num_cols; j++ )
-      infile >> this -> grid[i][j];
+      infile >> this -> grid[j][i];
 }
 
 // method creates nodes and stores them in nodes array
@@ -77,7 +77,7 @@ void Grid::read_nodes( string node_list_path ){
     this -> nodes[i]->set_x( x );
     this -> nodes[i]->set_y( y );
   }
-  this->find_neigh();
+  find_neigh();
 }
 
 // method that finds each node's 3 nearest neighbors using Manhattan distance
@@ -85,14 +85,14 @@ void Grid::read_nodes( string node_list_path ){
 void Grid::find_neigh(){
   int** neigh_matrix = create_matrix();
   // loop through all nodes
-  for( int i = 0; i < this->num_nodes; i++ ){
+  for( int i = 0; i < num_nodes; i++ ){
     // array to store Manhattan distances of all other nodes in respect to node at index i
-    float distances[this->num_nodes];
+    float distances[num_nodes];
     // loop to compute Manhattan distance of all other nodes
-    for( int j = 0; j < this->num_nodes; j++ ){
+    for( int j = 0; j < num_nodes; j++ ){
       // if to ensure node does not compute Manhattan distance of itself
       if( i != j ){
-        distances[j] = manhattan_dist( this->nodes[i], this->nodes[j] );
+        distances[j] = manhattan_dist( nodes[i], nodes[j] );
       } else{
         // set the distance of the node being tested equal to the maximum int value so it can never have the lowest score
         distances[j] = INT_MAX;
@@ -102,7 +102,7 @@ void Grid::find_neigh(){
     float min[3] = { distances[0], distances[1], distances[2] };
     int min_idx[3] = { 0, 1, 2 };
     int max_min_idx = find_max_idx( min );
-    for( int j = 3; j < this->num_nodes; j++ ){
+    for( int j = 3; j < num_nodes; j++ ){
       if( distances[j] < min[max_min_idx] ){
         min[max_min_idx] = j;
         min_idx[max_min_idx] = j;
@@ -119,10 +119,10 @@ void Grid::find_neigh(){
 }
 
 void Grid::set_start_end( int start_idx, int end_idx ){
-  for( int i = 0; i < this->num_nodes; i++ ){
+  for( int i = 0; i < num_nodes; i++ ){
     // set flag if node is start or end point
-    if ( i == start_idx ) this->nodes[i]->set_start_or_end(1);
-    if ( i == end_idx ) this->nodes[i]->set_start_or_end(2);
+    if ( i == start_idx ) nodes[i]->set_start_or_end(1);
+    if ( i == end_idx ) nodes[i]->set_start_or_end(2);
   }
   this->start_idx = start_idx;
   this->end_idx = end_idx;
@@ -137,7 +137,7 @@ void Grid::find_all_paths(){
 
   // Create an array to store paths
   int *path = new int[num_nodes];
-  int path_index = 0; // Initialize path[] as empty
+  int path_index = 0;
 
   // Initialize all nodes as not visited
   for ( int i = 0; i < num_nodes; i++ )
@@ -148,6 +148,7 @@ void Grid::find_all_paths(){
   int e = end_idx;
   all_path(s, e, visited, path, path_index);
   delete [] path;
+  delete [] visited;
 }
 // method that prints all paths from the start to end node
 void Grid::print_all_paths(){
@@ -167,7 +168,12 @@ void Grid::print_grid(){
   cout<<endl;
   for( int i = 0; i < num_rows; i++ ){
     for( int j = 0; j < num_cols; j++ ){
-      cout << grid[i][j] << " ";
+      for( int k = 0; k < num_nodes; k++ ){
+        if ( nodes[k]->get_x() == j && nodes[k]->get_y() == i )
+          printf( "\033[1;31m[%d]\033[0m", k );
+
+      }
+      printf("%f ", grid[j][i] );
     }
     cout << endl;
   }
@@ -200,34 +206,34 @@ void Grid::print(){
   *   PRIVATE    *
 *\                */
 
-// recursive helper function to find_all_paths
-// visited[] keeps track of vertices in current path.
-// path[] stores actual vertices and path_index is current
-// index in path[]
+// recursive helper function for find_all_paths
 void Grid::all_path( int start, int end, bool visited[], int path[], int &path_index ){
-  // Mark the current node and store it in path[]
+  // Mark the current node and store it in path array
   visited[start] = true;
   path[path_index] = start;
   path_index++;
 
   // If current vertex is same as destination, then print
-  // current path[]
+  // current path array
   if ( start == end ){
+    // temp vector to store values in path array
     vector<int> temp;
     for ( int i = 0; i < path_index; i++ ){
       temp.push_back( path[i] );
     }
+    // if the path visits at least 3 nodes, but no more than 5
+    // push_back the temp vector to the private all_paths vector of int vectors
     if ( temp.size() >= 3 && temp.size() <= 5 )
       all_paths.push_back( temp );
-  }else{ // If current vertex is not destination
-      // Recur for all the vertices adjacent to current vertex
+  // If current node is not destination
+  }else{
     vector<int> neighs = nodes[start]->get_neigh();
+    // Recur for all the node's neighbors
     for( auto i = neighs.begin(); i != neighs.end(); ++i )
       if ( !visited[*i] )
         all_path( *i, end, visited, path, path_index );
   }
-
-  // Remove current vertex from path[] and mark it as unvisited
+  // Remove current node from path array and mark it as unvisited
   path_index--;
   visited[start] = false;
 }

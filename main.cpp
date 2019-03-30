@@ -14,7 +14,7 @@
   * argv[4] == index of second node
   * argv[5] == path to output directory
 */
-// TODO: FIND ALL PATHS FROM START NODE TO END NODE
+// TODO: CHILD & GRANDCHILD PROCESSES
 
 using namespace std;
 int main( int argc, char** argv ){
@@ -34,7 +34,7 @@ int main( int argc, char** argv ){
   Grid grid = Grid( grid_path, node_list_path );
   grid.set_start_end( start_node_idx, end_node_idx );
   grid.find_all_paths();
-  
+
   grid.print();
 
   return 0;
