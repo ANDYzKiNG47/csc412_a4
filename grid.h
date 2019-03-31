@@ -15,6 +15,7 @@ class Grid{
     void find_neigh();
     void set_start_end( int start_idx, int end_idx );
     void find_all_paths();
+    vector<int> get_path( int idx );
     int get_num_paths();
     void print_all_paths();
     void print_grid();

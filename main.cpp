@@ -66,8 +66,16 @@ int main( int argc, char** argv ){
 
   // create children for each fork
   for( int i = 0; i < grid.get_num_paths(); ++i ){
+    // if child process
     if( ( child_pid = fork() ) == 0 ){
+      int temp = *all_paths_idx;
+      // increment the global variable for next process
       *all_paths_idx += 1;
+      // get the node path assigned to process
+      vector<int> child_node_path = grid.get_path( temp );
+      for( auto i = child_node_path.begin(); i != child_node_path.end(); i++ ) printf( " %d", *i );
+      cout << endl;
+
       exit(0);
     }
   }

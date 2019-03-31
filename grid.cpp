@@ -156,6 +156,16 @@ void Grid::find_all_paths(){
   delete [] path;
   delete [] visited;
 }
+// method that returns a single path at the index passed to it
+vector<int> Grid::get_path( int idx ){
+  vector< vector<int> >::iterator i = all_paths.begin();
+  if ( idx > num_paths ){
+    printf("invalid index");
+    exit(0);
+  }
+  i+=idx;
+  return *i;
+}
 
 int Grid::get_num_paths(){
   return num_paths;
