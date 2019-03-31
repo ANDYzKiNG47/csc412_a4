@@ -25,13 +25,14 @@
   * argv[4] == index of second node
   * argv[5] == path to output directory
 */
-// TODO: CHILD & GRANDCHILD PROCESSES
+// TODO: FIND DISTANCE
 
-static int* all_paths_idx;
 
 using namespace std;
 int main( int argc, char** argv ){
-
+  /*                *\
+    *     INIT     *
+  *\                */
   // read in command line arguments
   string grid_path = argv[1];
   //string grid_path = "/home/az47/CSC412/a4/grids/rand_grid.txt";
@@ -55,33 +56,56 @@ int main( int argc, char** argv ){
   grid.print();
 
   /*                *\
-    *   forking    *
+    *   FORKING    *
   *\                */
-  // init memory map
-  all_paths_idx = (int*) mmap(NULL, sizeof *all_paths_idx, PROT_READ | PROT_WRITE,
+  static int* path_num;
+  static int* path_dists;
+  path_num = (int*) mmap(NULL, sizeof *path_num, PROT_READ | PROT_WRITE,
                 MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-
-  pid_t parent_pid, child_pid;
-  int status = 0;
-
-  // create children for each fork
-  for( int i = 0; i < grid.get_num_paths(); ++i ){
-    // if child process
-    if( ( child_pid = fork() ) == 0 ){
-      int temp = *all_paths_idx;
-      // increment the global variable for next process
-      *all_paths_idx += 1;
-      // get the node path assigned to process
-      vector<int> child_node_path = grid.get_path( temp );
-      for( auto i = child_node_path.begin(); i != child_node_path.end(); i++ ) printf( " %d", *i );
-      cout << endl;
-
+  *path_num = grid.get_num_paths();
+  //init output array for grandchildren
+  path_dists = (int*) mmap(NULL, sizeof(int)*grid.get_num_paths(), PROT_READ | PROT_WRITE,
+                              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  for( int i = 0; i < grid.get_num_paths(); i++ ){
+    path_dists[i] = 0;
+  }
+  // create child
+  for( int i = 0; i < *path_num; i++ ){
+    if( fork() == 0 ){
+      // int number of grandchildren to create
+      static int* path_len = (int*) mmap(NULL, sizeof *path_len, PROT_READ | PROT_WRITE,
+                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+      *path_len = grid.get_path( i ).size();
+      // global string to share path string
+      printf("[son] pid %d from [par] pid %d\n",getpid(),getppid());
+      for( int j = 0; j < *(path_len) - 1; j++ ){
+        // create grandchild
+        if( fork() == 0 ){
+          int* test = grid.get_pair(i,j);
+          cout<<getppid()<<" : "<< test[0]<<" "<<test[1]<<endl <<flush;
+          grid.del_pair(test);
+          printf("[grc] pid %d from [son] pid %d\n",getpid(),getppid());
+          //find_dist
+          path_dists[i] += 1;
+          exit(0);
+        }
+      }
+      // wait for all grandchildren to exit
+      for( int i = 0; i < *path_num; i++ ){
+        wait(NULL);
+      }
+      munmap(path_len, sizeof *path_len);
       exit(0);
     }
   }
-  while (( parent_pid = wait(&status) ) > 0);
-  printf("%d\n", *all_paths_idx);
-  munmap(all_paths_idx, sizeof *all_paths_idx);
-
-  return 0;
-}
+  // wait untill all children exit
+  for( int i = 0; i < *path_num; i++ ){
+    wait(NULL);
+  }
+  for( int i = 0; i < grid.get_num_paths(); i++ ){
+    cout<<path_dists[i]<<endl;
+  }
+  //find shortest value in dist
+  munmap(path_num, sizeof *path_num);
+  munmap(path_dists, sizeof *path_dists );
+} // end main

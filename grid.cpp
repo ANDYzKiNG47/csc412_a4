@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include "node.h"
 #include "grid.h"
@@ -155,6 +156,25 @@ void Grid::find_all_paths(){
   num_paths = all_paths.size();
   delete [] path;
   delete [] visited;
+  //set_pairs();
+}
+
+// getter for a single pair in pairs vector
+int* Grid::get_pair( int path_idx, int pair_idx ){
+  vector<vector<int>>::iterator v = all_paths.begin();
+  v+= path_idx;
+  vector<int> v_vec = *v;
+  vector<int>::iterator p = v_vec.begin();
+  p+= pair_idx;
+  int n1 = *p;
+  int n2 = *(p+1);
+  int* arr = (int*) malloc(sizeof(int)*2);
+  arr[0] = n1;
+  arr[1] = n2;
+  return arr;
+}
+void Grid::del_pair(int * p){
+  free(p);
 }
 // method that returns a single path at the index passed to it
 vector<int> Grid::get_path( int idx ){
@@ -165,6 +185,18 @@ vector<int> Grid::get_path( int idx ){
   }
   i+=idx;
   return *i;
+}
+
+int Grid::get_pairs_size(){
+  return pairs.size();
+}
+// method that finds shortest distane between nodes at n1_idx and n2_idx
+int Grid::find_distance( int n1_idx , int n2_idx ){
+  // TODO FINISH FIND DISTANCE
+  Node* n1 = nodes[n1_idx];
+  Node* n2 = nodes[n2_idx];
+  int dist = n1_idx + n2_idx;
+  return dist;
 }
 
 int Grid::get_num_paths(){
@@ -257,7 +289,25 @@ void Grid::all_path( int start, int end, bool visited[], int path[], int &path_i
   path_index--;
   visited[start] = false;
 }
-
+// method to init pairs vector of int vetors, given a path index
+void Grid::set_pairs(){
+  for( int i = 0; i < num_paths; i ++ ){
+    for ( unsigned int j = 0; j < all_paths.at(i).size() - 1 ; j++ ){
+      vector<int> temp;
+      temp.push_back( all_paths.at( i ).at( j ) );
+      temp.push_back( all_paths.at( i ).at( j + 1 ) );
+      // using std::find with vector and iterator:
+      vector< vector<int> >::iterator it;
+      it = find( pairs.begin(), pairs.end(), temp );
+      if (it != pairs.end() ){
+        continue;
+      }
+      else{
+        pairs.push_back( temp );
+      }
+    }
+  }
+}
 // function to compute Manhattan distance between 2 nodes
 int Grid::manhattan_dist( Node* start_node, Node* end_node ){
   int x1 = start_node->get_x();

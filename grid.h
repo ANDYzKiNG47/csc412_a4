@@ -15,8 +15,12 @@ class Grid{
     void find_neigh();
     void set_start_end( int start_idx, int end_idx );
     void find_all_paths();
+    int* get_pair( int path_idx, int pair_idx );
+    void del_pair(int * p);
     vector<int> get_path( int idx );
+    int get_pairs_size();
     int get_num_paths();
+    int find_distance( int n1_idx , int n2_idx );
     void print_all_paths();
     void print_grid();
     void print_nodes();
@@ -30,6 +34,8 @@ class Grid{
     int start_idx;
     int end_idx;
     vector< vector<int> > all_paths;
+    void set_pairs();
+    vector< vector<int> > pairs;
     int num_paths;
     void all_path( int start, int end, bool visited[], int path[], int &path_index );
     int find_max_idx( float* array );
