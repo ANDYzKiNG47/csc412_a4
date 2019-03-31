@@ -18,6 +18,7 @@ Grid::Grid(){
   this->grid = NULL;
   this->num_rows = 0;
   this->num_cols = 0;
+  this->num_paths = 0;
 }
 // full constructor
 Grid::Grid( string grid_path, string node_list_path ){
@@ -25,6 +26,7 @@ Grid::Grid( string grid_path, string node_list_path ){
   read_grid( grid_path );
   // init nodes, num_nodes
   read_nodes( node_list_path );
+  this->num_paths = 0;
 }
 
 //destructor
@@ -42,7 +44,8 @@ Grid::~Grid(){
   delete [] nodes;
 }
 
-// method that generates a 2D array given a text file and returns a pointer to the array
+// method that generates a 2D array given a
+// text file and returns a pointer to the array
 void Grid::read_grid( string grid_path ){
   // open file storing grid
   ifstream infile( grid_path );
@@ -94,11 +97,13 @@ void Grid::find_neigh(){
       if( i != j ){
         distances[j] = manhattan_dist( nodes[i], nodes[j] );
       } else{
-        // set the distance of the node being tested equal to the maximum int value so it can never have the lowest score
+        // set the distance of the node being tested equal to the
+        //maximum int value so it can never have the lowest score
         distances[j] = INT_MAX;
       }
     }
-    // find 3 lowest Manhattan distances in the array and store the index of the score in private nodes array
+    // find 3 lowest Manhattan distances in the array and store the
+    //index of the score in private nodes array
     float min[3] = { distances[0], distances[1], distances[2] };
     int min_idx[3] = { 0, 1, 2 };
     int max_min_idx = find_max_idx( min );
@@ -147,8 +152,13 @@ void Grid::find_all_paths(){
   int s = start_idx;
   int e = end_idx;
   all_path(s, e, visited, path, path_index);
+  num_paths = all_paths.size();
   delete [] path;
   delete [] visited;
+}
+
+int Grid::get_num_paths(){
+  return num_paths;
 }
 // method that prints all paths from the start to end node
 void Grid::print_all_paths(){

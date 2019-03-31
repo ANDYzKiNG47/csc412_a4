@@ -1,9 +1,20 @@
+// C++ libs
 #include <cstdlib>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <ctime>
 
+// C libs
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+// local files
 #include "grid.h"
 #include "node.h"
 
@@ -16,8 +27,11 @@
 */
 // TODO: CHILD & GRANDCHILD PROCESSES
 
+static int* all_paths_idx;
+
 using namespace std;
 int main( int argc, char** argv ){
+
   // read in command line arguments
   string grid_path = argv[1];
   //string grid_path = "/home/az47/CSC412/a4/grids/rand_grid.txt";
@@ -32,10 +46,34 @@ int main( int argc, char** argv ){
 
   // create instance of Grid class
   Grid grid = Grid( grid_path, node_list_path );
+  // set the start and end node of the path
   grid.set_start_end( start_node_idx, end_node_idx );
+  // find all paths from the start node to the end node
+  // visiting at least 3, but no more than 5 nodes
   grid.find_all_paths();
-
+  // print all grid information
   grid.print();
+
+  /*                *\
+    *   forking    *
+  *\                */
+  // init memory map
+  all_paths_idx = (int*) mmap(NULL, sizeof *all_paths_idx, PROT_READ | PROT_WRITE,
+                MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+  pid_t parent_pid, child_pid;
+  int status = 0;
+
+  // create children for each fork
+  for( int i = 0; i < grid.get_num_paths(); ++i ){
+    if( ( child_pid = fork() ) == 0 ){
+      *all_paths_idx += 1;
+      exit(0);
+    }
+  }
+  while (( parent_pid = wait(&status) ) > 0);
+  printf("%d\n", *all_paths_idx);
+  munmap(all_paths_idx, sizeof *all_paths_idx);
 
   return 0;
 }
